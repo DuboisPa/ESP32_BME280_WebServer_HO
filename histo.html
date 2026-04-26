@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+         "http://www.w3.org/TR/html4/strict.dtd">
+         
+<html>
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=utf-8">
+   <title>Esp32 Weather Historic</title>
+   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+   <meta http-equiv="Pragma" content="no-cache">
+   <meta http-equiv="Expires" content="0">
+   
+   <script src="https://cdn.plot.ly/plotly-3.4.0.js" charset="utf-8">></script>   
+   <script src="https://cdn.plot.ly/plotly-locale-fr-latest.js"></script>
+   
+<style>
+   h2 { 
+      font-size: 25pt;
+      text-align: center;
+   }
+   .field2 {
+      width: 33%;
+      text-align: center;
+      font-size: 115%;
+      margin-left: auto;
+      margin-right: auto;
+   }
+   .lbuttons {
+      font-size: 100%;
+      width : 60pt;
+      height : 30pt;
+      margin-left: 5pt;
+      margin-right:5pt;   
+   }
+   .nmeatimeouthhmmss{
+      width: 20%;
+      margin-left: 5%;
+      margin-right: 5%;
+      font-size: 85%;
+      text-align: center;
+      border: 2px solid gray;
+      border-radius: 8px;
+      padding: 4px;
+}
+</style>
+
+</head>
+
+<body>
+<h2>ESP32 Weather Historic</h2>
+<hr>
+
+<form method="post" name="confighisto" id="configHisto">
+   <div>
+      <fieldset class="field2"><legend>Return in the past</legend>
+         <button type="button" class="lbuttons" name="showh" id="ShowH" onclick="showHisto()">Select</button>
+         <input type="number" id="nbOfHours" name="nbofhours" min="3" max="168" step="1" value="3" onchange="fmtDDHH(value)">
+         <label for="nbOfHours"> Hours back</label> 
+         
+         <time class="nmeatimeouthhmmss" id="calctime">0 day(s) 3 hour(s)</time>
+      </fieldset>
+   </div>
+</form>
+<textarea hidden id="jsonOutput" name="jsonOutput" rows="4" cols="260"></textarea>
+<hr>
+<div id="myPTH" style="width:100%"></div>
+<hr>
+
+<script type="text/javascript">
+
+function fmtDDHH(hours) {
+   let date = new Date(1970,0,1);
+   date.setHours(hours);
+   ddhh = `${date.getDate()-1} day(s) ${date.getHours()} hour(s)`;
+   document.getElementById("calctime").innerHTML = ddhh;
+}
+
+function showHisto() {
+   let jsonData = {};
+   jsonData["nbOfHours"] = document.forms["configHisto"].elements["nbOfHours"].value;
+   
+   requestData(JSON.stringify(jsonData));
+   
+   let wleft = (window.innerWidth - 250) / 2;   // outerWidth
+   let ttop = (window.innerHeight - 50) / 2;    // outerHeight
+   let sString = `menubar=no, status=no, scrollbars=no, resizable=no,titlebar=no, location=no, top=${ttop}, left=${wleft}, width=250, height=100`;
+   let myWindow = window.open("", "", sString);
+   myWindow.document.write('<p style="text-align: center; font-size: 200%;">Searching Data for 5 seconds</p>'); 
+   setTimeout( function() { myWindow.close(); replyData(); }, 5000); 
+}
+
+// https://stackoverflow.com/questions/38235715/fetch-reject-promise-and-catch-the-error-if-status-is-not-ok
+function replyData() {
+   fetch('/replyData')
+   .then(response => response.json()) 
+   .then(data => { ShowGraph(data)})
+   .catch(error => { 
+            //console.error('Error: ', error);
+            alert("Dataset problem,\nnot enough data or too many");
+         }) 
+}
+
+function requestData(jsonData) {
+   fetch('/requestData', {
+      method: 'POST',
+      headers: {
+         'Content-Type': 'application/json',
+      },
+      body: jsonData // Envoyer les données JSON via fetch() 
+   })  
+   .then(response => response.text())
+   .then(data => { //alert('Données envoyées avec succès !');
+         }) 
+   .catch(error => { //alert('Erreur lors de l\'envoi des données.'); 
+         })  
+}
+
+function ShowGraph(jsonData) {
+// P Atmo Mini  870hPa     950hPa
+// P Atmo Maxi 1090hPa    1050hPa
+// https://plotly.com/javascript/
+
+   var milliseconds;
+   var xdatetime     = [];             // date-time
+   var xatemperature  = [];            // air temperature
+   var xhumidity     = [];             // humidity
+   var xpressure     = [];             // pressure
+   var xwtemperature  = [];            // water temperature
+
+   for (obj of Object.entries(jsonData)) {
+      milliseconds = obj[1]["s"];
+      let d = new Date(milliseconds*1000);
+      // d.toUTCString();
+      xdatetime.push(d.toISOString());
+      xatemperature.push(obj[1]["a"]);
+      xhumidity.push(obj[1]["h"]);
+      xpressure.push(obj[1]["p"]);
+      xwtemperature.push(obj[1]["w"]);
+   }
+   
+   var humidity = {
+      x: xdatetime,
+      y: xhumidity,
+      name : 'Humidité',
+      type : 'lines+marker',
+      marker: {color: 'DeepSkyBlue', size: 8}
+   };
+   var atemperature = {
+      x: xdatetime,
+      y: xatemperature,
+      name : 'T° Air',
+      type : 'lines+marker',
+      yaxis : 'y2',
+      marker: {color: 'Red', size: 8}
+   };
+   var pression = {
+      x: xdatetime,
+      y: xpressure,
+      name : 'Pression relevée',
+      type : 'lines+marker',
+      yaxis : 'y3',
+      marker: {color: 'Green', size: 8}
+   };
+   var wtemperature = {
+      x: xdatetime,
+      y: xwtemperature,
+      name : 'T° Eau',
+      type : 'lines+marker',
+      yaxis : 'y4',
+      marker: {color: 'Blue', size: 8}
+   };
+
+   var dataPTH = [pression, atemperature, humidity, wtemperature];
+   var layoutPTH = {
+      title: {text: 'Pression atmosphérique, T° Air, Humidité, T° Eau'},
+      //width: 1280,
+      height: 720,
+      showlegend: true,
+		legend: {
+         x: 0.5,
+         y: 1,
+         'orientation': 'h',
+         'xanchor': 'center'
+      },
+      xaxis: {
+         automargin : true,
+         type: 'date'
+      },
+      yaxis: { 
+         title: {text: 'Humidité', font: {color: 'DeepSkyBlue'}},
+         tickfont: {color: 'DeepSkyBlue'},
+         tickformat: ".1f",
+         autorange: true,
+         range: [0, 100],
+         anchor: 'free',
+         type: 'linear'
+      },
+      yaxis2: { 
+         title: {text: 'T° Air', font: {color: 'Red'}},
+         tickfont: {color: 'Red'},
+         tickformat: ".1f",
+         autorange: true,
+         range: [-20, 50],
+         overlaying: 'y',
+         side: 'right',
+         type: 'linear'
+      },
+      yaxis3: { 
+         title: {text: 'Pression', font: {color: 'Green'}},
+         tickfont: {color: 'Green'},
+         tickformat: ".1f",
+         autorange: true,
+         range: [920, 1050],
+         overlaying: 'y',
+         position: 0.92,
+         side: 'right',
+         type: 'linear'
+      },
+      yaxis4: { 
+         title: {text: 'T° Eau', font: {color: 'Blue'}},
+         tickfont: {color: 'Blue'},
+         tickformat: ".1f",
+         autorange: false,
+         range: [-2, 37],
+         overlaying: 'y',
+         position: 0.97,
+         side: 'right',
+         type: 'linear'
+      },
+   };
+   
+   var config = {responsive: true, scrollZoom: true, locale: 'fr'};
+   Plotly.newPlot('myPTH', dataPTH, layoutPTH, config);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+         "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=utf-8">
+   <title>ESP32 Weather parameters</title>
+   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+   <meta http-equiv="Pragma" content="no-cache">
+   <meta http-equiv="Expires" content="0">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+   <!--link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"-->
+   
+<style>
+.h1 {
+  font-style: normal;
+  text-transform: none;
+  font-weight: bold;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 20pt;
+  text-align: center;
+}
+.hostname {
+  margin: 20px;
+  width: 96%;
+  border-color: #0f458d;
+  font-size: 110%;
+  text-align: center;
+}
+.network {
+  float: left;
+  width: 50%;
+  font-size: 100%;
+}
+.field1 {
+  border-color: #0f458d;
+  margin: 20px;
+  padding: 1em;
+  height: 50mm;
+}
+.field2 {
+  width : 96%;
+  border-color: #0f458d;
+  margin: 20px;
+  padding: 1em;
+}
+.ext_choices {
+  text-align: justify;
+}
+.wificlients {
+  margin-left: 31%;
+  margin-right: 2%;
+  width: 8%;
+  font-size: 90%;
+  text-align: center;
+}
+.nmeaoutput{
+  width: 20%;
+  margin-right: 0.5%;
+  font-size: 90%;
+  text-align: left;
+}
+.nmeachoices {
+  font-size: 100%;
+  text-align: justify;
+}
+.nmeatimeout{
+  width: 10%;
+  margin-right: 1%;
+  font-size: 90%;
+  text-align: left;
+  border: 2px solid gray;
+  border-radius: 8px;
+  padding: 4px;
+}
+.nmeatimeouthhmmss{
+  width: 10%;
+  margin-left: 5%;
+  margin-right: 0.5%;
+  font-size: 100%;
+  text-align: left;
+  border: 2px solid gray;
+  border-radius: 8px;
+  padding: 4px;
+}
+.valuesButtons {
+   width: 360pt;
+   //width: 250pt;
+   text-align: center;  
+   //margin-left: 5%;
+   margin-right: 1.0%;  
+   //float: left;
+   float: right;   
+}
+.lbuttons {
+   width : 100pt;
+   height : 20pt;
+   margin-left: 5pt;
+   margin-right:5pt;   
+}
+.nmealeft {
+   float : left;
+   width : 46.5%;
+   border-color: #0f458d;
+   margin: 10px;
+}
+.nmearight {
+   float : right;
+   width : 46.5%;
+   border-color: #0f458d;
+   margin: 10px;
+}
+.inp {
+   border: 1px solid #0f458d;
+   width: 55%;
+   font-size: 100%;
+   text-align: center;
+   margin-right : 10px;
+}
+.container {
+   display: grid;
+   //column-gap: 10px;
+   row-gap: 10px;
+   grid-template-columns: auto auto;
+}
+.container > div {
+  // width: 100%;
+  // margin-right: 0.5%;
+  // font-size: 90%;
+  // text-align: auto;
+  //background-color: #f1f1f1;
+  //border: 1px solid black;
+  //padding: 20px;
+  //text-align: center;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="h1">
+   <span>ESP32 Weather parameters</span>
+</div>
+<br>
+<form method="post" name="configsettings" id="configSettings">
+   <div >
+      <fieldset class="hostname">
+         <label for="APSTAHostName">Host Name</label>
+         <input style="width:18%; font-size:100%; border:1px solid #0f458d; margin-left:10px;" id="APSTAHostName" name="apstahostname" value="ESP32_Weather_Nmea0183" type="text" minlength="1" maxlength="32">
+      </fieldset>
+   </div>
+   <div class="network">
+      <fieldset class="field1"><legend>WI-FI AP NETWORK</legend> 
+         <div class="ext_choices">
+            <input id="APmode" name="apmode" checked="checked" type="checkbox" onclick="changeAPfields(id)"> 
+            <label for="APmode"> USE Autonomous</label>
+            <select class="wificlients" id="APClients" name="apclients">
+               <option value="4" selected>4</option>
+               <option value="5">5</option>
+               <option value="6">6</option>
+               <option value="7">7</option>
+               <option value="8">8</option>
+            </select>Number of clients
+         </div>
+         <br>
+         <input class="inp" id="APPassword" name="appassword" value="xxxxxxxx" type="password" minlength="8" maxlength="64">
+         <i class="far fa-eye" id="TogglePassAP" style="cursor: pointer; margin-left: -23px;"></i>
+         <label for="APPassword"> PASSWORD</label><br>
+         <input class="inp" id="APlocalIP" name="aplocalip" type="text" placeholder="192.168.4.101" onblur="ValidateIPaddress(id)">
+         <label for="APlocalIP"> IP ADDRESS</label>
+         <input class="inp" id="APsubnetMaskIP" name="apsubnetmaskip" type="text" placeholder="255.255.255.0" onblur="ValidateIPaddress(id)">
+         <label for="APsubnetMaskIP"> SUBNET MASK</label>
+         <input class="inp" id="APgatewayIP" name="apgatewayip" type="text" placeholder="192.168.4.199" onblur="ValidateIPaddress(id)">
+         <label for="APgatewayIP"> GATEWAY</label>
+         <input class="inp" id="APdhcp_startIP" name="apdhcp_startip" type="text" placeholder="192.168.4.102" onblur="ValidateIPaddress(id)">
+         <label for="APdhcp_startIP"> DHCP Start</label>
+      </fieldset>
+   </div>
+   <div class="network">
+      <fieldset class="field1"><legend>EXTERNAL NETWORK</legend>
+         <div class="ext_choices"> 
+            <input id="STAmode" name="stamode" type="checkbox" checked="checked" onclick="changeSTAfields(id)"> 
+            <label for="STAmode"> USE External</label>
+            <input id="DHCP" name="dhcpstatic" type="radio" checked onclick="changeStaticfields()"> 
+            <label for="DHCP"> DHCP</label> 
+            <input id="Static" name="dhcpstatic" type="radio" onclick="changeStaticfields()">
+            <label for="Static"> STATIC</label> 
+         </div>
+         <br>
+         <input class="inp" id="STASSID" name="stassid" value="xxxxxxxx" type="text" minlength="1" maxlength="32">
+         <label for="STASSID"> SSID</label><br>
+         <input class="inp" id="STAPassword" name="stapassword" value="xxxxxxxx" type="password" minlength="8" maxlength="64">
+         <i class="far fa-eye" id="TogglePassSTA" style="cursor: pointer; margin-left: -23px;"></i> 
+         <label for="STAPassword"> PASSWORD</label><br>
+         <input class="inp" id="STAlocalIP" name="stalocalip" type="text" placeholder="192.168.1.32" onblur="ValidateIPaddress(id)" disabled>
+         <label for="STAlocalIP"> IP ADDRESS</label>
+         <input class="inp" id="STAsubnetMaskIP" name="stasubnetmaskip" type="text" placeholder="255.255.255.0" onblur="ValidateIPaddress(id)" disabled>
+         <label for="STAsubnetMaskIP"> SUBNET MASK</label>
+         <input class="inp" id="STAgatewayIP" name="stagatewayip" type="text" placeholder="192.168.1.254" onblur="ValidateIPaddress(id)" disabled>
+         <label for="STAgatewayIP"> GATEWAY</label>
+      </fieldset>
+   </div>
+   <div>
+      <fieldset class="field2"> <legend>SENSORS</legend>
+         <input id="WaterSensor" name="watersensor" type="checkbox" onclick="AlertSensors(id)" disabled> 
+         <label for="WaterSensor" style="margin-right:10px"> Water temperature (DS18B20)</label>
+         <input checked="checked" id="AirSensor" name="airsensor" type="checkbox" onclick="AlertSensors(id)"> 
+         <label for="AirSensor" style="margin-right:10px"> Air: pressure, temperature, humidity (BME280)</label>
+      </fieldset>
+   </div>
+   <div>
+      <fieldset class="field2"><legend>NMEA</legend>
+         <div class="nmeachoices">
+            <fieldset class="nmealeft"><legend>NMEA0183 sentences</legend>
+               <input name="nmeasentence" id="WIXDR" type="radio" checked> 
+               <label for="WIXDR"> $WIXDR (Weather Instrument Transducer Measurement, preferred)</label> 
+               <br><br>
+               <input name="nmeasentence" id="IIMDA" type="radio" disabled>
+               <label for="IIMDA"> $IIMDA (Integrated Instrumentation Meteorological Composite, obsolete as of 2009)</label> 
+            </fieldset>
+         </div>
+         <div class="nmeachoices">
+            <fieldset class="nmearight" onchange="checkoutput()"><legend>NMEA0183 Output</legend>
+            <div class="container">
+               <div>
+                  <select class="nmeaoutput" id="UDPPort" name="udpport">
+                  </select> UDP Port (0 to disable)
+                  <script>
+                     var selection = document.getElementById("UDPPort");
+                     for (var i = 2050; i >= 2000; --i){
+                        var option = document.createElement("option");
+                        option.text = option.value = i;
+                        if (i == 2010) {option.selected = true;}
+                        selection.add(option, 0);
+                     }
+                     var option = document.createElement("option");
+                     option.text = option.value = 0;
+                     selection.add(option, 0);
+                  </script>
+               </div>
+               <div>
+                <select class="nmeaoutput" id="Serial1" name="serial1" disabled>
+                  <option value="0" selected>0</option>
+                  <option value="4800">4800</option>
+                  <option value="9600">9600</option>
+                  <option value="19200">19200</option>
+                  <option value="38400">38400</option>
+                  <option value="57600">57600</option>
+                  <option value="115200">115200</option>
+                  </select> Serial 1 Baudrate (0 to disable)
+               </div>
+               <div>
+                  <select class="nmeaoutput" id="USBPort" name="usbport">
+                  <option value="0" selected>0</option>
+                  <option value="4800">4800</option>
+                  <option value="9600">9600</option>
+                  <option value="19200">19200</option>
+                  <option value="38400">38400</option>
+                  <option value="57600">57600</option>
+                  <option value="115200">115200</option>
+                  </select> USB Baudrate (0 to disable)
+               </div>
+               <div>
+                  <select class="nmeaoutput" id="Serial2" name="serial2" disabled>
+                  <option value="0" selected>0</option>
+                  <option value="4800">4800</option>
+                  <option value="9600">9600</option>
+                  <option value="19200">19200</option>
+                  <option value="38400">38400</option>
+                  <option value="57600">57600</option>
+                  <option value="115200">115200</option>
+                  </select> Serial 2 Baudrate(0 to disable)
+               </div>
+            </div>
+            </fieldset>
+         </div>
+         <div class="nmeachoices">
+            <fieldset class="nmearight"><legend>NMEA2000</legend>
+               <input id="NMEA2K" name="nmea2k" type="checkbox" onchange="checkoutput()" disabled> 
+               <label for="NMEA2K"> NMEA2000 Output</label>
+            </fieldset>
+            <fieldset class="nmealeft"><legend>NMEA0183 Delay Time</legend>
+               <input class="delaytime" type="number" id="DelayTime" name="timeOUT" min="5" max="1800" step="5" value="60" onchange="fmtMMSS(value)">
+               <label for="DelayTime"> in seconds</label>
+               <time class="nmeatimeouthhmmss" id="calctime">00:01:00</time>
+               <label for="calctime">hours:minutes:seconds</label> 
+            </fieldset>
+            <fieldset class="nmearight">
+               <input checked="checked" id="Battery" name="battery" type="checkbox" > 
+               <label for="Battery" style="margin-right:10px"> Battery present</label>
+            </fieldset>
+         </div>
+      </fieldset> 
+   </div>
+ </form>
+
+<div class="valuesButtons">
+   <fieldset>
+      <button type="button" class="lbuttons" name="loadc" id="LoadC"  onclick="loadConfig()">LOAD</button>
+      <button type="button" class="lbuttons" name="resetc" id="ResetC" onclick="resetConfig()">RESET</button>
+      <button type="button" class="lbuttons" name="savec" id="SaveC" onclick="saveConfig()">SAVE & RESTART</button>
+   </fieldset>
+</div>
+<!--textarea id="jsonOutput" name="jsonOutput" rows="2" cols="180"></textarea-->
+   
+<script type="text/javascript">
+
+var bToggleAP;
+var bToggleSTA;
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadConfig();
+});
+
+function loadConfig() {
+   fetch('/loadConfig')
+   .then(response => response.json()) // Convertit en JSON
+   .then(data => {
+      //console.log("JSON reçu :", data);
+      //alert("JSON reçu :", data);
+      //jsonValues = JSON.stringify(data);   // no, you're an idiot, you're adding single quotes around valid JSON!
+      var jsonValues = data;
+      //document.getElementById("jsonOutput").innerHTML = `${jsonValues}`; // warning : backtip or grave accent U+0060  // to control 
+      resetConfig(jsonValues);
+   })
+   .catch(error => console.error("Erreur JSON :", error));
+}
+
+function resetConfig(jsonValues) {
+   if (jsonValues === undefined) {
+      var jsonFieldsValues = {"APSTAHostName":"ESP32_Weather_Nmea0183","APmode":true,"APClients":"4","APPassword":"12345678","APlocalIP":"192.168.4.2","APsubnetMaskIP":"255.255.255.0","APgatewayIP":"192.168.4.99","APdhcp_startIP":"192.168.4.11","STAmode":false,"DHCP":true,"Static":false,"STASSID":"FreeOrangeSFRBouygues","STAPassword":"12345678","STAlocalIP":"192.168.1.64","STAsubnetMaskIP":"255.255.255.0","STAgatewayIP":"192.168.1.254","WaterSensor":true,"AirSensor":true,"WIXDR":true,"IIMDA":false,"Battery":true,"UDPPort":2010,"USBPort":38400,"Serial1":0,"Serial2":0,"DelayTimeLCD":5,"DelayTime":60,"NMEA2K":false};
+   }
+   else {
+      var jsonFieldsValues = jsonValues;
+   }
+   for (obj of Object.entries(jsonFieldsValues)) {
+      let element = document.getElementById(obj[0]);
+      if (["checkbox","radio"].includes(element.type)) {
+         element.checked = obj[1];
+      }
+      else {
+         element.value = obj[1];
+      }
+   }
+   changeAPfields("APmode");
+   changeSTAfields("STAmode");
+   fmtMMSS(document.getElementById("DelayTime").value);
+}
+
+function saveConfig() {
+   let form = document.getElementById("configSettings");
+   let formData = {};
+   for (let i = 0; i < form.elements.length; i++) {
+      let element = form.elements[i];
+      if (["checkbox","radio"].includes(element.type)) {
+         formData[element.id] = element.checked;
+      }
+      else { 
+         formData[element.id] = element.value;
+      }
+   }
+   sendConfig(JSON.stringify(formData));
+}
+
+function sendConfig(jsonData) {
+   // Envoyer les données via fetch() (AJAX)
+   fetch('/saveConfig', {
+      method: 'POST',
+      headers: {
+         'Content-Type': 'application/json',
+      },
+      body: jsonData // Envoyer les données JSON
+   })    // fetch
+   .then(response => response.text())
+   .then(data => {
+     //alert('Données envoyées avec succès !');
+   }) // then(data
+   .catch(error => {
+      //alert('Erreur lors de l\'envoi des données.');
+   })   // catch 
+}
+
+function fmtMMSS(seconds) {
+   //let seconds = document.getElementById("DelayTime").value;
+   let date = new Date(1970,0,1);
+   date.setSeconds(seconds);
+   mmss = date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+   document.getElementById("calctime").innerHTML = mmss;
+}
+
+function checkoutput() {
+   if (document.getElementById("UDPPort").value == 0
+      && document.getElementById("USBPort").value == 0
+      && document.getElementById("Serial1").value == 0
+      && document.getElementById("Serial2").value == 0) {
+         alert("NMEA0183 Output disabled");
+         //alert("One of the output ports must be enabled !\n\nNMEA0183 UDP Port reset");
+         //document.getElementById("UDPPort").options[11].selected = true;
+      }
+      else {
+         alert("NMEA0183 Output enabled");
+      }
+}
+
+function AlertSensors(id) {
+   let bW = document.getElementById("WaterSensor").checked;
+   let bA = document.getElementById("AirSensor").checked;
+   if (!bW && !bA) {
+      alert("At least one sensor !");
+      document.getElementById(id).checked = true;
+   }
+}
+
+function changeAPfields(id) {
+   if (AlertAPSTAStatus(id)) {
+      // warning, inverse the value
+      let bX = document.getElementById(id).checked;
+      let togglePass = document.getElementById("TogglePassAP");
+      if (bToggleAP && !bX) {
+         togglePass.click();
+      }
+      togglePass.style = bX ? "cursor: pointer; margin-left: -23px;" : "cursor: pointer; margin-left: -21px; visibility: hidden";
+      document.getElementById("APClients").disabled = !bX;
+      document.getElementById("APPassword").disabled = !bX;
+      document.getElementById("APlocalIP").disabled = !bX;
+      document.getElementById("APsubnetMaskIP").disabled = !bX;
+      document.getElementById("APgatewayIP").disabled = !bX;
+      document.getElementById("APdhcp_startIP").disabled = !bX;
+   }
+}
+
+function changeSTAfields(id) {
+   if (AlertAPSTAStatus(id)) {
+      // warning, inverse the value
+      let bX = document.getElementById(id).checked;
+      let togglePass = document.getElementById("TogglePassSTA");
+      if (bToggleSTA && !bX) {
+         togglePass.click();
+      }
+      togglePass.style = bX ? "cursor: pointer; margin-left: -23px;" : "cursor: pointer; margin-left: -21px; visibility: hidden";
+      document.getElementById("STASSID").disabled = !bX;
+      document.getElementById("STAPassword").disabled = !bX;
+      document.getElementById("DHCP").disabled = !bX;
+      document.getElementById("Static").disabled = !bX;
+      changeStaticfields();
+   }
+}
+
+function changeStaticfields() {
+   // warning, inverse the value
+   let bX = document.getElementById("DHCP").checked;
+   document.getElementById("STAlocalIP").disabled = bX;
+   document.getElementById("STAsubnetMaskIP").disabled = bX;
+   document.getElementById("STAgatewayIP").disabled = bX;
+}
+
+function AlertAPSTAStatus(id) {
+   let bAP = document.getElementById("APmode").checked;
+   let bSTA = document.getElementById("STAmode").checked;
+   let bOK = true;
+   if (!bAP && !bSTA) {
+      alert("One of the networks must be enabled !");
+      document.getElementById(id).checked = true;
+      bOK = false;
+   }
+   return bOK;
+}
+
+function ValidateIPaddress(id) {
+   let vValue = document.getElementById(id).value;
+   let bOK = false;
+   if (/^(?!.*\.$)((?!0\d)(1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/.test(vValue)){
+      bOK = true;
+   }
+   else {
+      alert("IP address is invalid !");
+   }
+   return bOK;
+}
+
+// AP Password
+const togglePassAP = document.getElementById("TogglePassAP");
+togglePassAP.addEventListener("click", function() {
+      const passwordAP = document.getElementById("APPassword"); 
+      let type = passwordAP.getAttribute("type") === "password" ? "text" : "password";
+      passwordAP.setAttribute("type", type);
+      bToggleAP = type === "text" ? true : false;
+      this.classList.toggle("fa-eye-slash");
+   } 
+);
+
+// STA Password
+const togglePassSTA = document.getElementById("TogglePassSTA");
+togglePassSTA.addEventListener("click", function() {
+      const passwordSTA = document.getElementById("STAPassword");
+      // toggle the type attribut
+      let type = passwordSTA.getAttribute("type") === "password" ? "text" : "password"
+      passwordSTA.setAttribute("type", type);
+      // know the type
+      bToggleSTA = type === "text" ? true : false;     
+      // toggle the eye slash icon
+      this.classList.toggle("fa-eye-slash");
+   }  // end function
+);    // end listener
+
+</script>
+
+</body></html>

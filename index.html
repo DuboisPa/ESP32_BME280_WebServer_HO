@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Esp32 Weather</title>
+    <meta http-equiv="refresh" content="300">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!--link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"-->
+
+<style>
+   html {
+      font-family: Arial;
+      display: inline-block;
+      margin: 0px auto;
+      text-align: center;
+   }
+   h2 { 
+      font-size: 4.5rem;
+   }
+   .units { 
+      font-size: 1.2rem;
+   }
+   .bme-labels {
+      font-size: 1.5rem;
+      text-align: left;
+      vertical-align:middle;
+      padding-bottom: 15px;
+   }
+   
+   table, 
+   th, 
+   td {
+      text-align: left;
+      font-size: 2.5rem;
+   }
+   table.center {
+      margin-left: auto; 
+      margin-right: auto;
+   }
+   tr {
+      height:75px;
+   }
+   .lbuttons {
+      font-size: 110%;
+      width: fit-content;
+      height: 25pt;
+ 
+   }
+</style>
+</head>
+  
+<body>
+   <h2>Esp32 Weather Server</h2>
+      <table class="center" style="width:50%;">
+         <tbody>
+            <tr>
+               <td style="width:7%"><i class="fas fa-thermometer-half" style="color:#059e8a;"></i><br></td>
+               <td style="width:15%"><class="bme-labels">Température Air</class="bme-labels"></td>
+               <td style="width:10%;text-align:right" id="air_temperature"><br></td>
+               <td style="width:8%"><sup class="units">°C</sup></td>
+            </tr>
+            <tr>
+               <td><i class="fas fa-droplet" style="color:#00add6;"></i><br></td>
+               <td><class="bme-labels">Humidité</class="bme-labels"></td>
+               <td style="text-align:right" id="humidity"><br></td>
+               <td><sup class="units">%</sup></td>
+            </tr>
+            <tr>
+               <td><i class="fas fa-cloud-sun-rain" style="color:#00add6;"></i><br></td>
+               <td><class="bme-labels" id="p_alt">Pression<br></class="bme-labels"></td>
+               <td style="text-align:right" id="pressure"><br></td>
+               <td id="altitude" hidden=""><br></td>
+               <td><sup class="units">hPa</sup></td>
+            </tr>
+            <tr>
+               <td style="width:7%"><i class="fas fa-thermometer-half" style="color:#059e8a;"></i><br></td>
+               <td style="width:15%"><class="bme-labels">Température Eau</class="bme-labels"></td>
+               <td style="width:10%;text-align:right" id="water_temperature"><br></td>
+               <td style="width:8%"><sup class="units">°C</sup></td>
+            </tr>
+            <tr>
+               <td><i class="fas fa-calendar-days" style="color: #74C0FC;"></i><i class="fas fa-clock fa-spin" style="color: #74C0FC;"></i></td>
+               <td><class="bme-labels">Relevé après</class="bme-labels"></td>
+               <td style="text-align:right" id="date_time" class="bme-labels"><br></td>
+               <td><br></td>
+            </tr>
+         </tbody>
+      </table>
+   <br>
+   <button type="button" class="lbuttons" name="showhisto" id="ShowHisto" onclick='window.open("./histo.html","_self")'>Show Historic</button>
+    
+<script type="text/javascript">
+
+document.addEventListener("DOMContentLoaded", () => {
+   loadValues();
+});
+
+function loadValues() {
+   fetch('/loadValues')
+   .then(response => response.json()) // Convertit en JSON
+   .then(data => {
+      // console.log("JSON reçu :", data); 
+      for (obj of Object.entries(data)) {
+         let element = document.getElementById(obj[0]);
+         element.innerHTML = obj[1];
+      }
+   })
+   .catch(error => console.error("Erreur :", error));
+}
+
+</script>
+</body>
+</html>
